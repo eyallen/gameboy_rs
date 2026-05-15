@@ -51,7 +51,28 @@ impl CPU {
 
                 self.pc += 3;
             } // LD r16, imm16
-            0x02 | 0x12 | 0x22 | 0x32 => {} // LD [r16mem], A
+            0x02 | 0x12 | 0x22 | 0x32 => {
+                let dest = (0b0011_0000 & instr) >> 4;
+
+                let addr = match dest {
+                    0 => self.registers.get_bc(),
+                    1 => self.registers.get_de(),
+                    2 => {
+                        let a = self.registers.get_hl();
+                        self.registers.set_hl(a + 1);
+                        a
+                    }
+                    3 => {
+                        let a = self.registers.get_hl();
+                        self.registers.set_hl(a - 1);
+                        a
+                    }
+                    _ => unreachable!(),
+                };
+
+                self.mmu.write_byte(addr, self.registers.a);
+                self.pc += 1;
+            } // LD [r16mem], A
             0x0A | 0x1A | 0x2A | 0x3A => {} // LD A, [r16mem]
             0x08 => {} // LD [imm16], SP
             0x03 | 0x13 | 0x23 | 0x33 => {} // INC r16
