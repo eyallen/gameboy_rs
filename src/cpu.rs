@@ -59,12 +59,12 @@ impl CPU {
                     1 => self.registers.get_de(),
                     2 => {
                         let a = self.registers.get_hl();
-                        self.registers.set_hl(a + 1);
+                        self.registers.set_hl(a.wrapping_add(1));
                         a
                     }
                     3 => {
                         let a = self.registers.get_hl();
-                        self.registers.set_hl(a - 1);
+                        self.registers.set_hl(a.wrapping_sub(1));
                         a
                     }
                     _ => unreachable!(),
@@ -73,7 +73,28 @@ impl CPU {
                 self.mmu.write_byte(addr, self.registers.a);
                 self.pc += 1;
             } // LD [r16mem], A
-            0x0A | 0x1A | 0x2A | 0x3A => {} // LD A, [r16mem]
+            0x0A | 0x1A | 0x2A | 0x3A => {
+                let dest = (0b0011_0000 & instr) >> 4;
+
+                let addr = match dest {
+                    0 => self.registers.get_bc(),
+                    1 => self.registers.get_de(),
+                    2 => {
+                        let a = self.registers.get_hl();
+                        self.registers.set_hl(a.wrapping_add(1));
+                        a
+                    }
+                    3 => {
+                        let a = self.registers.get_hl();
+                        self.registers.set_hl(a.wrapping_sub(1));
+                        a
+                    }
+                    _ => unreachable!(),
+                };
+
+                self.registers.a = self.mmu.read_byte(addr);
+                self.pc += 1;
+            } // LD A, [r16mem]
             0x08 => {} // LD [imm16], SP
             0x03 | 0x13 | 0x23 | 0x33 => {} // INC r16
             0x0B | 0x1B | 0x2B | 0x3B => {} // DEC r16

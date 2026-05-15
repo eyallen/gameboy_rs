@@ -1,7 +1,22 @@
 use gameboy::registers::{CpuFlag, Registers};
 
 fn make() -> Registers {
-    Registers::new()
+    let mut r = Registers::new();
+    r.set_af(0x0000);
+    r
+}
+
+#[test]
+fn post_boot_state() {
+    let r = Registers::new();
+    assert_eq!(r.a, 0x01);
+    assert_eq!(r.b, 0x00);
+    assert_eq!(r.c, 0x13);
+    assert_eq!(r.d, 0x00);
+    assert_eq!(r.e, 0xD8);
+    assert_eq!(r.get_af() & 0x00FF, 0xB0);
+    assert_eq!(r.h, 0x01);
+    assert_eq!(r.l, 0x4D);
 }
 
 #[test]

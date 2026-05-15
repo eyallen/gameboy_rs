@@ -75,7 +75,7 @@ impl Registers {
         self.f &= 0xF0;
     }
 
-    pub fn get_flag(&mut self, flag: CpuFlag) -> bool {
+    pub fn get_flag(&self, flag: CpuFlag) -> bool {
         let mask = flag as u8;
         self.f & mask > 0
     }
